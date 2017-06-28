@@ -16,7 +16,7 @@
 	"db_app_conf_options": {
 		"connection_string": "",
 		"node_is_segmented": false,
-		"tags": []
+		"tags": null
 	},
 	"disable_dashboard_zeroconf": false,
 	"app_path": "apps/",
@@ -24,7 +24,7 @@
 		"type": "redis",
 		"host": "localhost",
 		"port": 6379,
-		"hosts": [],
+		"hosts": null,
 		"username": "",
 		"password": "",
 		"database": 0,
@@ -37,7 +37,7 @@
 		"type": "",
 		"host": "",
 		"port": 0,
-		"hosts": [],
+		"hosts": null,
 		"username": "",
 		"password": "",
 		"database": 0,
@@ -56,7 +56,7 @@
 			"enabled": false,
 			"normalise_uuids": false,
 			"normalise_numbers": false,
-			"custom_patterns": []
+			"custom_patterns": null
 		},
 		"pool_size": 0
 	},
@@ -96,7 +96,7 @@
 			"method": "",
 			"target_path": "",
 			"template_path": "",
-			"header_map": [],
+			"header_map": null,
 			"event_timeout": 0
 		},
 		"global_trigger_limit": 0,
@@ -132,7 +132,7 @@
 		"use_ssl_le": false,
 		"ssl_insecure_skip_verify": false,
 		"enable_websockets": false,
-		"certificates": [],
+		"certificates": null,
 		"server_name": "",
 		"min_version": 0,
 		"flush_interval": 0,
@@ -147,13 +147,13 @@
 		"auth_provider": {
 			"name": "",
 			"storage_engine": "",
-			"meta": []
+			"meta": null
 		},
 		"force_session_provider": false,
 		"session_provider": {
 			"name": "",
 			"storage_engine": "",
-			"meta": []
+			"meta": null
 		}
 	},
 	"uptime_tests": {
@@ -177,9 +177,9 @@
 	},
 	"hide_generator_header": false,
 	"event_handlers": {
-		"events": []
+		"events": null
 	},
-	"event_trigers_defunct": [],
+	"event_trigers_defunct": null,
 	"pid_file_location": "",
 	"allow_insecure_configs": false,
 	"public_key_path": "",
