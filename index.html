@@ -8,9 +8,14 @@
 		$(document).ready(function() {
 			$('#conf').linedtextarea();
 			$('#def').linedtextarea();
-			var restart = $('#restart');
-			restart.click(function(e) {
-				$.get("restart", function(data, status){});
+			$('#restart').click(function(e) {
+				var conf = $('#conf').val();
+				var def = $('#def').val();
+				$.ajax({
+					type: "POST",
+					url:  '/restart',
+					data: {conf: conf, def: def}
+				});
 			});
 		});
 	</script>

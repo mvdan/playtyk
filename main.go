@@ -38,7 +38,7 @@ func main() {
 	r.Use(middleware.Timeout(60 * time.Second))
 	r.Use(middleware.StripSlashes)
 	r.Get("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))).ServeHTTP)
-	r.Get("/restart", restart)
+	r.Post("/restart", restart)
 	r.Get("/", index)
 	gwURL, err := url.Parse("http://localhost:8080")
 	if err != nil {
@@ -64,7 +64,7 @@ func load() error {
 	return nil
 }
 
-func restartCmd() error {
+func restartCmd(r *http.Request) error {
 	cmdMu.Lock()
 	defer cmdMu.Unlock()
 	if cmd != nil {
@@ -72,6 +72,14 @@ func restartCmd() error {
 	}
 	ctx, fn := context.WithCancel(context.Background())
 	cmdCancel = fn
+	conf := r.FormValue("conf")
+	def := r.FormValue("def")
+	if err := writeFile(filepath.Join("gateway", "conf.json"), conf); err != nil {
+		return err
+	}
+	if err := writeFile(filepath.Join("gateway", "apps", "test.json"), def); err != nil {
+		return err
+	}
 	cmd = exec.CommandContext(ctx, "tyk", "--conf=conf.json")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -84,12 +92,16 @@ func readFile(path string) (string, error) {
 	return string(bs), err
 }
 
+func writeFile(path, data string) error {
+	return ioutil.WriteFile(path, []byte(data), 0644)
+}
+
 type snippet struct {
 	Conf, Def string
 }
 
 func restart(w http.ResponseWriter, r *http.Request) {
-	if err := restartCmd(); err != nil {
+	if err := restartCmd(r); err != nil {
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}
