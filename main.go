@@ -59,6 +59,9 @@ func main() {
 		log.Fatal(err)
 	}
 	revProxy := httputil.NewSingleHostReverseProxy(gwURL)
+	r.HandleFunc("/gw/tyk/*", func(w http.ResponseWriter, r *http.Request) {
+		io.WriteString(w, "no!")
+	})
 	r.Get("/gw/*", http.StripPrefix("/gw", revProxy).ServeHTTP)
 	baseURL = *listen
 	if strings.HasPrefix(baseURL, ":") {
