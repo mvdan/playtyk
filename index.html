@@ -41,7 +41,7 @@
 						share.val(url)
 						share.show()
 						share.select()
-						window.history.pushState({}, "", url);
+						window.history.pushState({}, "", url)
 					}
 				})
 			})
@@ -50,6 +50,20 @@
 			})
 			$('#output').on('click wheel', function() {
 				stopAutoscroll = true
+			})
+			$(document).delegate('textarea', 'keydown', function(e) {
+				var keyCode = e.keyCode || e.which
+				if (keyCode == 9) {
+					e.preventDefault()
+					var start = this.selectionStart
+					var end = this.selectionEnd
+
+					$(this).val($(this).val().substring(0, start)
+						+ "\t"
+						+ $(this).val().substring(end))
+					this.selectionStart =
+						this.selectionEnd = start + 1
+				}
 			})
 			// TODO: replace this with a stream, e.g. websocket
 			window.setInterval(function() {
@@ -72,7 +86,7 @@
 			var lines = accOutput.split("\n")
 			output = ""
 			for (var i = 0; i < lines.length; i++) {
-				var line = lines[i];
+				var line = lines[i]
 				var m = line.match(levelRe)
 				if (m === null) {
 					continue
@@ -87,7 +101,7 @@
 			var out = $("#output")
 			out.text(output)
 			if (!stopAutoscroll) {
-				out.scrollTop(out[0].scrollHeight);
+				out.scrollTop(out[0].scrollHeight)
 			}
 		}
 	</script>
