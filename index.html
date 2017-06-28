@@ -37,9 +37,12 @@
 						alert(xhr.responseText)
 					},
 					success: function(url) {
-						$("#shareURL").val(url)
-						$("#shareURL").show()
-						$("#shareURL").select()
+						var share = $("#shareURL")
+						share.val(url)
+						share.show()
+						share.select()
+						window.history.pushState({}, "", url);
+
 					}
 				})
 			})
