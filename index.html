@@ -19,11 +19,15 @@
 						alert(xhr.responseText)
 					},
 					success: function(url) {
-						$("#output").text("")
+						accOutput = ""
+						updateLog()
 						$("#open").text(url)
 						$("#open").attr("href", url)
 					}
 				})
+			})
+			$('#loglevel').on('change', function() {
+				updateLog()
 			})
 			// TODO: replace this with a stream, e.g. websocket
 			window.setInterval(function(){
@@ -31,11 +35,31 @@
 					type: "GET",
 					url:  '/output',
 					success: function(output) {
-						$("#output").text(output)
+						accOutput = output
+						updateLog()
 					}
 				})
 			}, 1000)
 		})
+		var accOutput = ""
+		var levelRe = / level=(error|warn|info)/
+		var levels = ["error", "warn", "info"]
+		function updateLog() {
+			var level = levels.indexOf($("#loglevel option:selected").val())
+			var lines = accOutput.split("\n")
+			output = ""
+			for (var i = 0; i < lines.length; i++){
+				var line = lines[i];
+				var m = line.match(levelRe)
+				if (m === null) {
+					continue
+				}
+				if (levels.indexOf(m[1]) <= level) {
+					output += line + "\n"
+				}
+			}
+			$("#output").text(output)
+		}
 	</script>
 
 	<style type="text/css" media="screen">
@@ -79,6 +103,9 @@
 			top: 1px;
 			border-radius: 5px;
 		}
+		:focus {
+			outline: none;
+		}
 		#shareURL {
 			display: none;
 			width: 280px;
@@ -87,6 +114,10 @@
 			background: #eee;
 			color: black;
 			height: 23px;
+		}
+		#loglevel {
+			padding: 5px;
+			border-radius: 5px;
 		}
 		#topwrap {
 			padding: 5px; margin: 0;
@@ -144,7 +175,8 @@
 		}
 		#output {
 			width: 100%;
-			height: 100%;
+			height: 90%;
+			top:   20px;
 		}
 	</style>
 </head>
@@ -156,6 +188,11 @@
 			<input type="button" value="Share" id="share">
 			<input type="text" id="shareURL">
 			Try it: <a id="open" href="{{.BaseURL}}/gw/test">{{.BaseURL}}/gw/test</a>
+			| Log level: <select id="loglevel">
+				<option value="error">error</option>
+				<option selected value="warn">warn</option>
+				<option value="info">info</option>
+			</select>
 		</div>
 	</div>
 	<div id="topwrap">

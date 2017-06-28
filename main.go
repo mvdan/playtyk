@@ -37,7 +37,6 @@ var (
 
 	baseURL string
 
-	verbose  = flag.Bool("v", false, "verbose mode - more gateway logs")
 	listen   = flag.String("l", ":8081", "address to listen on")
 	gwURLStr = flag.String("gw", "http://localhost:8080", "local gateway URL")
 )
@@ -113,11 +112,6 @@ func restartCmd(r *http.Request) error {
 	cmd.Stderr = w
 	cmd.Dir = "gateway"
 	cmd.Env = os.Environ()
-	if *verbose {
-		cmd.Env = append(cmd.Env, "TYK_LOGLEVEL=info")
-	} else {
-		cmd.Env = append(cmd.Env, "TYK_LOGLEVEL=warn")
-	}
 	return cmd.Start()
 }
 
