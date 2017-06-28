@@ -48,9 +48,11 @@ func main() {
 		log.Fatal(err)
 	}
 	r := chi.NewRouter()
+	r.Use(middleware.Heartbeat("/ping"))
+	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
-	r.Use(middleware.Timeout(60 * time.Second))
+	r.Use(middleware.Timeout(10 * time.Second))
 	r.Use(middleware.StripSlashes)
 	r.Get("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))).ServeHTTP)
 	r.Post("/restart", restart)
