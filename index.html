@@ -8,52 +8,6 @@
 		a {
 			color: #009;
 		}
-		#wrap {
-			padding: 5px;
-			margin: 0;
-
-			position: absolute;
-			top: 50px;
-			bottom: 25%;
-			left: 0;
-			right: 0;
-
-			background: #FFD;
-		}
-		#code, #output, .lines {
-			font-size: 11pt;
-		}
-
-		#code {
-			color: black;
-			background: inherit;
-
-			width: 100%;
-			height: 100%;
-			padding: 0; margin: 0;
-			border: none;
-			outline: none;
-			resize: none;
-			wrap: off;
-			float: right;
-		}
-		#output {
-			position: absolute;
-			top: 75%;
-			bottom: 0;
-			left: 0;
-			right: 0;
-			padding: 8px;
-		}
-		#output .system, #output .loading {
-			color: #999;
-		}
-		#output .stderr, #output .error {
-			color: #900;
-		}
-		#output pre {
-			margin: 0;
-		}
 		#banner {
 			position: absolute;
 			left: 0;
@@ -79,6 +33,7 @@
 		}
 		input[type=button] {
 			height: 30px;
+			padding: 5px;
 			border: 1px solid #375EAB;
 			font-size: 16px;
 			font-family: sans-serif;
@@ -88,51 +43,44 @@
 			top: 1px;
 			border-radius: 5px;
 		}
-		#shareURL {
-			width: 280px;
-			font-size: 16px;
-			border: 1px solid #ccc;
-			background: #eee;
-			color: black;
-			height: 23px;
-		}
-		#embedLabel {
-			font-family: sans-serif;
-		}
-		.exit {
-			color: lightgray;
-		}
+		#wrap {
+			padding: 5px; margin: 0;
 
-		.embedded #banner {
-			display: none;
-		}
-		.embedded #wrap {
-			top: 0;
-		}
-		#embedRun {
-			display: none;
-		}
-		.embedded #embedRun {
-			display: block;
 			position: absolute;
-			z-index: 1;
-			top: 10px;
-			right: 10px;
+			top: 50px;
+			bottom: 35%;
+			left: 0; right: 0;
+
+			background: #FFD;
+		}
+		#def, #conf {
+			font-size: 11pt;
+			color: black;
+			background: inherit;
+
+			width: 50%;
+			height: 100%;
+			padding: 0; margin: 0;
+			border: none;
+			outline: none;
+			resize: none;
+			wrap: off;
+			float: left;
 		}
 	</style>
 </head>
 <body>
-	<input type="button" value="Run" id="embedRun">
 	<div id="banner">
 		<div id="head" itemprop="name">The Tyk Playground</div>
 		<div id="controls">
-			<input type="button" value="Reload" id="run">
-			<input type="button" value="Format" id="fmt">
+			<input type="button" value="Reload" id="reload">
+			<input type="button" value="Format" id="format">
 			<input type="button" value="Share" id="share">
 		</div>
 	</div>
 	<div id="wrap">
-		<textarea id="code" name="code" autocorrect="off" autocomplete="off" autocapitalize="off" spellcheck="false">{{printf "%s" .Def}}</textarea>
+		<textarea id="conf" autocorrect="off" autocomplete="off" autocapitalize="off" spellcheck="false">{{printf "%s" .Conf}}</textarea>
+		<textarea id="def" autocorrect="off" autocomplete="off" autocapitalize="off" spellcheck="false">{{printf "%s" .Def}}</textarea>
 	</div>
 </body>
 </html>

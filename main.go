@@ -30,11 +30,12 @@ func main() {
 }
 
 type snippet struct {
-	Def string
+	Conf, Def string
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	tmpl.Lookup("index.html").Execute(w, snippet{
-		Def: "here is def",
+		Conf: "here is conf",
+		Def:  "here is def",
 	})
 }
