@@ -1,3 +1,4 @@
 /gateway/conf.json
 /gateway/apps/*.json
 *.pid
+shares/

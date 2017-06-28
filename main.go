@@ -3,6 +3,8 @@ package main
 import (
 	"bytes"
 	"context"
+	"crypto/sha1"
+	"encoding/base64"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -52,6 +54,7 @@ func main() {
 	r.Use(middleware.StripSlashes)
 	r.Get("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))).ServeHTTP)
 	r.Post("/restart", restart)
+	r.Post("/share", share)
 	r.Get("/output", output)
 	r.Get("/", index)
 	gwURL, err := url.Parse(*gwURLStr)
@@ -62,7 +65,7 @@ func main() {
 	r.HandleFunc("/gw/tyk/*", func(w http.ResponseWriter, r *http.Request) {
 		io.WriteString(w, "no!")
 	})
-	r.Get("/favicon.ico", func (w http.ResponseWriter, r *http.Request) {
+	r.Get("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, filepath.Join("static", "favicon.ico"))
 	})
 	r.Get("/gw/*", http.StripPrefix("/gw", revProxy).ServeHTTP)
@@ -110,9 +113,8 @@ func restartCmd(r *http.Request) error {
 	}
 	cmd = exec.CommandContext(ctx, "tyk", "--conf=conf.json")
 	cmdBuf = new(bytes.Buffer)
-	w := io.MultiWriter(os.Stderr, cmdBuf)
-	cmd.Stdout = w
-	cmd.Stderr = w
+	cmd.Stdout = cmdBuf
+	cmd.Stderr = cmdBuf
 	cmd.Dir = "gateway"
 	cmd.Env = os.Environ()
 	return cmd.Start()
@@ -127,16 +129,27 @@ func writeFile(path, data string) error {
 	return ioutil.WriteFile(path, []byte(data), 0644)
 }
 
+func pairFromForm(r *http.Request) (string, string, error) {
+	conf := r.FormValue("conf")
+	if !json.Valid([]byte(conf)) {
+		return "", "", fmt.Errorf("the gateway config is not valid JSON")
+	}
+	def := r.FormValue("def")
+	if !json.Valid([]byte(def)) {
+		return "", "", fmt.Errorf("the API definition is not valid JSON")
+	}
+	return conf, def, nil
+}
+
 func restart(w http.ResponseWriter, r *http.Request) {
-	conf := []byte(r.FormValue("conf"))
-	def := []byte(r.FormValue("def"))
-	if !json.Valid(conf) || !json.Valid(def) {
-		http.Error(w, "invalid JSON", 400)
+	_, def, err := pairFromForm(r)
+	if err != nil {
+		http.Error(w, err.Error(), 400)
 		return
 	}
-	listenPath, _ := jsonparser.GetString(def, "proxy", "listen_path")
+	listenPath, _ := jsonparser.GetString([]byte(def), "proxy", "listen_path")
 	if listenPath == "" {
-		http.Error(w, "empty listen_path", 400)
+		http.Error(w, "empty or missing listen_path", 400)
 		return
 	}
 	if err := restartCmd(r); err != nil {
@@ -146,13 +159,39 @@ func restart(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, baseURL+"/gw"+listenPath)
 }
 
+func base64SHA1(bs []byte) string {
+	hasher := sha1.New()
+	hasher.Write(bs)
+	return base64.URLEncoding.EncodeToString(hasher.Sum(nil))
+}
+
+func share(w http.ResponseWriter, r *http.Request) {
+	conf, def, err := pairFromForm(r)
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+	if err := restartCmd(r); err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	state := pageState{Conf: conf, Def: def}
+	enc, err := json.Marshal(state)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	name := base64SHA1(enc)[:10]
+	io.WriteString(w, baseURL+"/s/"+name)
+}
+
 func output(w http.ResponseWriter, r *http.Request) {
 	cmdMu.Lock()
 	defer cmdMu.Unlock()
 	io.WriteString(w, cmdBuf.String())
 }
 
-type tmplBody struct {
+type pageState struct {
 	BaseURL   string
 	Conf, Def string
 }
@@ -162,7 +201,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	tmpl.Lookup("index.html").Execute(w, tmplBody{
+	tmpl.Lookup("index.html").Execute(w, pageState{
 		BaseURL: baseURL,
 		Conf:    defConf,
 		Def:     defDef,
