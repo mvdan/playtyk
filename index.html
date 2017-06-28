@@ -48,8 +48,11 @@
 			$('#loglevel').on('change', function() {
 				updateLog()
 			})
+			$('#output').on('click wheel', function() {
+				stopAutoscroll = true
+			})
 			// TODO: replace this with a stream, e.g. websocket
-			window.setInterval(function(){
+			window.setInterval(function() {
 				$.ajax({
 					type: "GET",
 					url:  '/output',
@@ -60,6 +63,7 @@
 				})
 			}, 1000)
 		})
+		var stopAutoscroll = false
 		var accOutput = ""
 		var levelRe = / level=(error|warn|info)/
 		var levels = ["error", "warn", "info"]
@@ -67,17 +71,24 @@
 			var level = levels.indexOf($("#loglevel option:selected").val())
 			var lines = accOutput.split("\n")
 			output = ""
-			for (var i = 0; i < lines.length; i++){
+			for (var i = 0; i < lines.length; i++) {
 				var line = lines[i];
 				var m = line.match(levelRe)
 				if (m === null) {
 					continue
 				}
 				if (levels.indexOf(m[1]) <= level) {
-					output += line + "\n"
+					if (output != "") {
+						output += "\n"
+					}
+					output += line
 				}
 			}
-			$("#output").text(output)
+			var out = $("#output")
+			out.text(output)
+			if (!stopAutoscroll) {
+				out.scrollTop(out[0].scrollHeight);
+			}
 		}
 	</script>
 
@@ -130,11 +141,10 @@
 			display: none;
 			width: 250px;
 			font-size: 12px;
-			padding: 2px;
+			padding: 6px;
 			border: 1px solid #ccc;
 			background: #eee;
 			color: black;
-			height: 23px;
 		}
 		#loglevel {
 			padding: 5px;
