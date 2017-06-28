@@ -1,11 +1,10 @@
 package main
 
 import (
-	"encoding/json"
 	"html/template"
+	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"path/filepath"
 	"time"
 
@@ -16,7 +15,7 @@ import (
 var (
 	tmpl *template.Template
 
-	conf, def map[string]interface{}
+	conf, def string
 )
 
 func main() {
@@ -39,23 +38,18 @@ func load() error {
 	if err != nil {
 		return err
 	}
-	if conf, err = parseFile(filepath.Join("default", "conf.json")); err != nil {
+	if conf, err = readFile(filepath.Join("default", "conf.json")); err != nil {
 		return err
 	}
-	if def, err = parseFile(filepath.Join("default", "def.json")); err != nil {
+	if def, err = readFile(filepath.Join("default", "def.json")); err != nil {
 		return err
 	}
 	return nil
 }
 
-func parseFile(path string) (map[string]interface{}, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	var m map[string]interface{}
-	err = json.NewDecoder(f).Decode(&m)
-	return m, err
+func readFile(path string) (string, error) {
+	bs, err := ioutil.ReadFile(path)
+	return string(bs), err
 }
 
 type snippet struct {
@@ -63,10 +57,8 @@ type snippet struct {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	jsonConf, _ := json.MarshalIndent(conf, "", "\t")
-	jsonDef, _ := json.MarshalIndent(def, "", "\t")
 	tmpl.Lookup("index.html").Execute(w, snippet{
-		Conf: string(jsonConf),
-		Def:  string(jsonDef),
+		Conf: conf,
+		Def:  def,
 	})
 }
