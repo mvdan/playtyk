@@ -1,0 +1,19 @@
+{
+	"api_id": "test",
+	"org_id": "default",
+	"use_keyless": true,
+	"version_data": {
+		"not_versioned": true,
+		"versions": {
+			"default": {
+				"name": "default",
+				"expires": "2000-01-02 15:04"
+			}
+		}
+	},
+	"proxy": {
+		"listen_path": "/test",
+		"target_url": "http://httpbin.org",
+		"strip_listen_path": true
+	}
+}
