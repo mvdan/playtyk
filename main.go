@@ -62,6 +62,9 @@ func main() {
 	r.HandleFunc("/gw/tyk/*", func(w http.ResponseWriter, r *http.Request) {
 		io.WriteString(w, "no!")
 	})
+	r.Get("/favicon.ico", func (w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, filepath.Join("static", "favicon.ico"))
+	})
 	r.Get("/gw/*", http.StripPrefix("/gw", revProxy).ServeHTTP)
 	baseURL = *listen
 	if strings.HasPrefix(baseURL, ":") {
