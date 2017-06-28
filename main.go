@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"html/template"
 	"io/ioutil"
 	"log"
@@ -46,6 +47,7 @@ func main() {
 	}
 	revProxy := httputil.NewSingleHostReverseProxy(gwURL)
 	r.Get("/gw/*", http.StripPrefix("/gw", revProxy).ServeHTTP)
+	fmt.Println("Serving on http://localhost:8081")
 	http.ListenAndServe(":8081", r)
 }
 
