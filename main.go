@@ -18,6 +18,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -140,6 +141,12 @@ func pairFromForm(r *http.Request) (string, string, error) {
 	def := r.FormValue("def")
 	if !json.Valid([]byte(def)) {
 		return "", "", fmt.Errorf("the API definition is not valid JSON")
+	}
+	if !strings.HasSuffix(conf, "\n") {
+		conf += "\n"
+	}
+	if !strings.HasSuffix(def, "\n") {
+		def += "\n"
 	}
 	return conf, def, nil
 }
