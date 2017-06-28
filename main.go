@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"flag"
@@ -32,9 +33,11 @@ var (
 	cmdMu     sync.Mutex
 	cmd       *exec.Cmd
 	cmdCancel context.CancelFunc
+	cmdBuf    *bytes.Buffer
 
 	baseURL string
 
+	verbose  = flag.Bool("v", false, "verbose mode - more gateway logs")
 	listen   = flag.String("l", ":8081", "address to listen on")
 	gwURLStr = flag.String("gw", "http://localhost:8080", "local gateway URL")
 )
@@ -100,9 +103,17 @@ func restartCmd(r *http.Request) error {
 		return err
 	}
 	cmd = exec.CommandContext(ctx, "tyk", "--conf=conf.json")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmdBuf = new(bytes.Buffer)
+	w := io.MultiWriter(os.Stderr, cmdBuf)
+	cmd.Stdout = w
+	cmd.Stderr = w
 	cmd.Dir = "gateway"
+	cmd.Env = os.Environ()
+	if *verbose {
+		cmd.Env = append(cmd.Env, "TYK_LOGLEVEL=info")
+	} else {
+		cmd.Env = append(cmd.Env, "TYK_LOGLEVEL=warn")
+	}
 	return cmd.Start()
 }
 
