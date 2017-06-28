@@ -18,7 +18,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 	"sync"
 	"time"
 
@@ -37,13 +36,13 @@ var (
 	cmdCancel context.CancelFunc
 	cmdBuf    *bytes.Buffer
 
-	baseURL string
-
 	listen   = flag.String("l", ":8081", "address to listen on")
+	baseURL  = flag.String("u", "https://play.tyk.io", "public base URL")
 	gwURLStr = flag.String("gw", "http://localhost:8080", "local gateway URL")
 )
 
 func main() {
+	flag.Parse()
 	if err := load(); err != nil {
 		log.Fatal(err)
 	}
@@ -70,11 +69,7 @@ func main() {
 		http.ServeFile(w, r, filepath.Join("static", "favicon.ico"))
 	})
 	r.Get("/gw/*", http.StripPrefix("/gw", revProxy).ServeHTTP)
-	baseURL = *listen
-	if strings.HasPrefix(baseURL, ":") {
-		baseURL = "http://localhost" + baseURL
-	}
-	fmt.Printf("Open %s in your browser\n", baseURL)
+	fmt.Printf("Listening on %s", *listen)
 	http.ListenAndServe(*listen, r)
 }
 
@@ -161,7 +156,7 @@ func restart(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	io.WriteString(w, baseURL+"/gw"+listenPath)
+	io.WriteString(w, *baseURL+"/gw"+listenPath)
 }
 
 func base64SHA1(bs []byte) string {
@@ -191,7 +186,7 @@ func share(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	io.WriteString(w, baseURL+"/s/"+name)
+	io.WriteString(w, *baseURL+"/s/"+name)
 }
 
 func fetch(w http.ResponseWriter, r *http.Request) {
@@ -214,7 +209,7 @@ func fetch(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	st.BaseURL = baseURL
+	st.BaseURL = *baseURL
 	tmpl.Lookup("index.html").Execute(w, st)
 }
 
@@ -235,7 +230,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	tmpl.Lookup("index.html").Execute(w, pageState{
-		BaseURL: baseURL,
+		BaseURL: *baseURL,
 		Conf:    defConf,
 		Def:     defDef,
 	})
