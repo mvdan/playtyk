@@ -187,7 +187,7 @@ func share(w http.ResponseWriter, r *http.Request) {
 func fetch(w http.ResponseWriter, r *http.Request) {
 	name := chi.URLParam(r, "name")
 	base := filepath.Join("shares", name)
-	conf, err := readFile(base + ".conf.json")
+	def, err := readFile(base + ".def.json")
 	if err != nil {
 		if os.IsNotExist(err) {
 			http.Error(w, err.Error(), 404)
@@ -196,10 +196,9 @@ func fetch(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	def, err := readFile(base + ".def.json")
+	conf, err := readFile(base + ".conf.json")
 	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
+		conf = defConf
 	}
 	if err := restartCmdWithPair(r, conf, def); err != nil {
 		http.Error(w, err.Error(), 500)
