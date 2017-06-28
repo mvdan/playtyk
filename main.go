@@ -53,6 +53,7 @@ func main() {
 	r.Use(middleware.StripSlashes)
 	r.Get("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))).ServeHTTP)
 	r.Post("/restart", restart)
+	r.Get("/output", output)
 	r.Get("/", index)
 	gwURL, err := url.Parse(*gwURLStr)
 	if err != nil {
@@ -146,6 +147,12 @@ func restart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	io.WriteString(w, baseURL+"/gw"+listenPath)
+}
+
+func output(w http.ResponseWriter, r *http.Request) {
+	cmdMu.Lock()
+	defer cmdMu.Unlock()
+	io.WriteString(w, cmdBuf.String())
 }
 
 type tmplBody struct {
