@@ -14,7 +14,13 @@
 				$.ajax({
 					type: "POST",
 					url:  '/restart',
-					data: {conf: conf, def: def}
+					data: {conf: conf, def: def},
+					error: function(xhr) {
+						alert(xhr.responseText)
+					},
+					success: function(data) {
+						console.log(data)
+					}
 				});
 			});
 		});
@@ -114,6 +120,7 @@
 		<div id="controls">
 			<input type="button" value="Restart" id="restart">
 			<input type="button" value="Share" id="share">
+			<a id="open" href="http://localhost:8080/gw/test">http://localhost:8080/gw/test</a>
 		</div>
 	</div>
 	<div id="wrap">

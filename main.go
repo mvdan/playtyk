@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io/ioutil"
@@ -22,7 +23,7 @@ import (
 var (
 	tmpl *template.Template
 
-	conf, def string
+	defConf, defDef string
 
 	cmdMu     sync.Mutex
 	cmd       *exec.Cmd
@@ -57,10 +58,10 @@ func load() error {
 	if err != nil {
 		return err
 	}
-	if conf, err = readFile(filepath.Join("default", "conf.json")); err != nil {
+	if defConf, err = readFile(filepath.Join("default", "conf.json")); err != nil {
 		return err
 	}
-	if def, err = readFile(filepath.Join("default", "def.json")); err != nil {
+	if defDef, err = readFile(filepath.Join("default", "def.json")); err != nil {
 		return err
 	}
 	return nil
@@ -74,8 +75,11 @@ func restartCmd(r *http.Request) error {
 	}
 	ctx, fn := context.WithCancel(context.Background())
 	cmdCancel = fn
-	conf := r.FormValue("conf")
-	def := r.FormValue("def")
+	conf, def := defConf, defDef
+	if r.Method == "POST" {
+		conf = r.FormValue("conf")
+		def = r.FormValue("def")
+	}
 	if err := writeFile(filepath.Join("gateway", "conf.json"), conf); err != nil {
 		return err
 	}
@@ -103,15 +107,25 @@ type snippet struct {
 }
 
 func restart(w http.ResponseWriter, r *http.Request) {
+	var def map[string]interface{}
+	if err := json.Unmarshal([]byte(r.FormValue("def")), &def); err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+	//listenPath := def["proxy"].(map[string]interface{})["listen_path"].(string)
 	if err := restartCmd(r); err != nil {
-		http.Error(w, http.StatusText(500), 500)
+		http.Error(w, err.Error(), 500)
 		return
 	}
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
+	if err := restartCmd(r); err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
 	tmpl.Lookup("index.html").Execute(w, snippet{
-		Conf: conf,
-		Def:  def,
+		Conf: defConf,
+		Def:  defDef,
 	})
 }
