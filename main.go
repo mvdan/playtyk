@@ -48,17 +48,20 @@ func main() {
 		log.Fatal(err)
 	}
 	r := chi.NewRouter()
-	r.Use(middleware.Heartbeat("/ping"))
 	r.Use(middleware.RealIP)
+	r.Use(middleware.StripSlashes)
+	r.Use(middleware.Heartbeat("/ping"))
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(10 * time.Second))
-	r.Use(middleware.StripSlashes)
 	r.Get("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))).ServeHTTP)
+	r.Get("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, filepath.Join("static", "favicon.ico"))
+	})
+	r.Get("/", index)
+	r.Get("/output", output)
 	r.Post("/restart", restart)
 	r.Post("/share", share)
-	r.Get("/output", output)
-	r.Get("/", index)
 	r.Get("/s/{name}", fetch)
 	gwURL, err := url.Parse(*gwURLStr)
 	if err != nil {
@@ -67,9 +70,6 @@ func main() {
 	revProxy := httputil.NewSingleHostReverseProxy(gwURL)
 	r.HandleFunc("/gw/tyk/*", func(w http.ResponseWriter, r *http.Request) {
 		io.WriteString(w, "no!")
-	})
-	r.Get("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, filepath.Join("static", "favicon.ico"))
 	})
 	r.Get("/gw/*", http.StripPrefix("/gw", revProxy).ServeHTTP)
 	fmt.Printf("Listening on %s", *listen)
