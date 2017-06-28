@@ -17,6 +17,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/buger/jsonparser"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 )
@@ -108,17 +109,22 @@ type snippet struct {
 }
 
 func restart(w http.ResponseWriter, r *http.Request) {
-	var def map[string]interface{}
-	if err := json.Unmarshal([]byte(r.FormValue("def")), &def); err != nil {
-		http.Error(w, err.Error(), 400)
+	conf := []byte(r.FormValue("conf"))
+	def := []byte(r.FormValue("def"))
+	if !json.Valid(conf) || !json.Valid(def) {
+		http.Error(w, "invalid JSON", 400)
+		return
+	}
+	listenPath, _ := jsonparser.GetString(def, "proxy", "listen_path")
+	if listenPath == "" {
+		http.Error(w, "empty listen_path", 400)
 		return
 	}
 	if err := restartCmd(r); err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	listenPath := def["proxy"].(map[string]interface{})["listen_path"].(string)
-	io.WriteString(w, "http://localhost:8080/gw" + listenPath)
+	io.WriteString(w, "http://localhost:8080/gw"+listenPath)
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
