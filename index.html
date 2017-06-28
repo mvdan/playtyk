@@ -8,6 +8,10 @@
 		$(document).ready(function() {
 			$('#conf').linedtextarea();
 			$('#def').linedtextarea();
+			var restart = $('#restart');
+			restart.click(function(e) {
+				$.get("restart", function(data, status){});
+			});
 		});
 	</script>
 
@@ -103,7 +107,7 @@
 	<div id="banner">
 		<div id="head" itemprop="name">The Tyk Playground</div>
 		<div id="controls">
-			<input type="button" value="Reload" id="reload">
+			<input type="button" value="Restart" id="restart">
 			<input type="button" value="Share" id="share">
 		</div>
 	</div>

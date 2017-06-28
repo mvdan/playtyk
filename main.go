@@ -1,13 +1,17 @@
 package main
 
 import (
+	"context"
 	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/go-chi/chi"
@@ -19,7 +23,9 @@ var (
 
 	conf, def string
 
-	cmd *exec.Cmd
+	cmdMu     sync.Mutex
+	cmd       *exec.Cmd
+	cmdCancel context.CancelFunc
 )
 
 func main() {
@@ -32,7 +38,14 @@ func main() {
 	r.Use(middleware.Timeout(60 * time.Second))
 	r.Use(middleware.StripSlashes)
 	r.Get("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))).ServeHTTP)
-	r.Get("/", handler)
+	r.Get("/restart", restart)
+	r.Get("/", index)
+	gwURL, err := url.Parse("http://localhost:8080")
+	if err != nil {
+		log.Fatal(err)
+	}
+	revProxy := httputil.NewSingleHostReverseProxy(gwURL)
+	r.Get("/gw/*", http.StripPrefix("/gw", revProxy).ServeHTTP)
 	http.ListenAndServe(":8081", r)
 }
 
@@ -48,8 +61,18 @@ func load() error {
 	if def, err = readFile(filepath.Join("default", "def.json")); err != nil {
 		return err
 	}
-	// TODO: context when http request is cancelled
-	cmd = exec.Command("tyk", "--conf=conf.json")
+	return nil
+}
+
+func restartCmd() error {
+	cmdMu.Lock()
+	defer cmdMu.Unlock()
+	if cmd != nil {
+		cmdCancel()
+	}
+	ctx, fn := context.WithCancel(context.Background())
+	cmdCancel = fn
+	cmd = exec.CommandContext(ctx, "tyk", "--conf=conf.json")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Dir = "gateway"
@@ -65,7 +88,14 @@ type snippet struct {
 	Conf, Def string
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
+func restart(w http.ResponseWriter, r *http.Request) {
+	if err := restartCmd(); err != nil {
+		http.Error(w, http.StatusText(500), 500)
+		return
+	}
+}
+
+func index(w http.ResponseWriter, r *http.Request) {
 	tmpl.Lookup("index.html").Execute(w, snippet{
 		Conf: conf,
 		Def:  def,
