@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -112,11 +113,12 @@ func restart(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 400)
 		return
 	}
-	//listenPath := def["proxy"].(map[string]interface{})["listen_path"].(string)
 	if err := restartCmd(r); err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
+	listenPath := def["proxy"].(map[string]interface{})["listen_path"].(string)
+	io.WriteString(w, "http://localhost:8080/gw" + listenPath)
 }
 
 func index(w http.ResponseWriter, r *http.Request) {

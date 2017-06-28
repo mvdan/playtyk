@@ -18,8 +18,9 @@
 					error: function(xhr) {
 						alert(xhr.responseText)
 					},
-					success: function(data) {
-						console.log(data)
+					success: function(url) {
+						$("#open").text(url)
+						$("#open").attr("href", url)
 					}
 				});
 			});
@@ -66,6 +67,15 @@
 			position: static;
 			top: 1px;
 			border-radius: 5px;
+		}
+		#shareURL {
+			display: none;
+			width: 280px;
+			font-size: 16px;
+			border: 1px solid #ccc;
+			background: #eee;
+			color: black;
+			height: 23px;
 		}
 		#wrap {
 			padding: 5px; margin: 0;
@@ -120,6 +130,7 @@
 		<div id="controls">
 			<input type="button" value="Restart" id="restart">
 			<input type="button" value="Share" id="share">
+			<input type="text" id="shareURL">
 			<a id="open" href="http://localhost:8080/gw/test">http://localhost:8080/gw/test</a>
 		</div>
 	</div>
