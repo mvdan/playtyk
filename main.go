@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"os/exec"
 	"path/filepath"
 	"time"
 
@@ -16,6 +18,8 @@ var (
 	tmpl *template.Template
 
 	conf, def string
+
+	cmd *exec.Cmd
 )
 
 func main() {
@@ -29,7 +33,7 @@ func main() {
 	r.Use(middleware.StripSlashes)
 	r.Get("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))).ServeHTTP)
 	r.Get("/", handler)
-	http.ListenAndServe(":8080", r)
+	http.ListenAndServe(":8081", r)
 }
 
 func load() error {
@@ -44,7 +48,12 @@ func load() error {
 	if def, err = readFile(filepath.Join("default", "def.json")); err != nil {
 		return err
 	}
-	return nil
+	// TODO: context when http request is cancelled
+	cmd = exec.Command("tyk", "--conf=conf.json")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Dir = "gateway"
+	return cmd.Start()
 }
 
 func readFile(path string) (string, error) {
