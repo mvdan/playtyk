@@ -1,0 +1,197 @@
+{
+    "listen_address": "",
+    "listen_port": 8080,
+    "secret": "352d20ee67be67f6340b4c0605b044b7",
+    "node_secret": "",
+    "template_path": "templates",
+    "tyk_js_path": "js/tyk.js",
+    "middleware_path": "middleware",
+    "policies": {
+        "policy_source": "",
+        "policy_connection_string": "",
+        "policy_record_name": "",
+        "allow_explicit_policy_id": false
+    },
+    "use_db_app_configs": false,
+    "db_app_conf_options": {
+        "connection_string": "",
+        "node_is_segmented": false,
+        "tags": null
+    },
+    "disable_dashboard_zeroconf": false,
+    "app_path": "apps/",
+    "storage": {
+        "type": "redis",
+        "host": "localhost",
+        "port": 6379,
+        "hosts": null,
+        "username": "",
+        "password": "",
+        "database": 0,
+        "optimisation_max_idle": 100,
+        "optimisation_max_active": 0,
+        "enable_cluster": false
+    },
+    "enable_separate_cache_store": false,
+    "cache_storage": {
+        "type": "",
+        "host": "",
+        "port": 0,
+        "hosts": null,
+        "username": "",
+        "password": "",
+        "database": 0,
+        "optimisation_max_idle": 0,
+        "optimisation_max_active": 0,
+        "enable_cluster": false
+    },
+    "enable_analytics": false,
+    "analytics_config": {
+        "type": "",
+        "ignored_ips": [],
+        "enable_detailed_recording": false,
+        "enable_geo_ip": false,
+        "geo_ip_db_path": "",
+        "normalise_urls": {
+            "enabled": false,
+            "normalise_uuids": false,
+            "normalise_numbers": false,
+            "custom_patterns": null
+        },
+        "pool_size": 0
+    },
+    "health_check": {
+        "enable_health_checks": true,
+        "health_check_value_timeouts": 60
+    },
+    "optimisations_use_async_session_write": false,
+    "allow_master_keys": false,
+    "hash_keys": false,
+    "suppress_redis_signal_reload": false,
+    "suppress_default_org_store": false,
+    "use_redis_log": false,
+    "sentry_code": "",
+    "use_sentry": false,
+    "use_syslog": false,
+    "use_graylog": false,
+    "use_logstash": false,
+    "graylog_network_addr": "",
+    "logstash_network_addr": "",
+    "syslog_transport": "",
+    "logstash_transport": "",
+    "syslog_network_addr": "",
+    "statsd_connection_string": "",
+    "statsd_prefix": "",
+    "enforce_org_data_age": false,
+    "enforce_org_data_detail_logging": false,
+    "enforce_org_quotas": false,
+    "experimental_process_org_off_thread": false,
+    "enable_non_transactional_rate_limiter": false,
+    "enable_sentinel_rate_limiter": false,
+    "enable_redis_rolling_limiter": false,
+    "management_node": false,
+    "Monitor": {
+        "enable_trigger_monitors": false,
+        "configuration": {
+            "method": "",
+            "target_path": "",
+            "template_path": "",
+            "header_map": null,
+            "event_timeout": 0
+        },
+        "global_trigger_limit": 0,
+        "monitor_user_keys": false,
+        "monitor_org_keys": false
+    },
+    "oauth_refresh_token_expire": 0,
+    "oauth_token_expire": 0,
+    "oauth_redirect_uri_separator": "",
+    "slave_options": {
+        "use_rpc": false,
+        "connection_string": "",
+        "rpc_key": "",
+        "api_key": "",
+        "enable_rpc_cache": false,
+        "bind_to_slugs": false,
+        "disable_keyspace_sync": false,
+        "group_id": "",
+        "call_timeout": 0,
+        "ping_timeout": 0
+    },
+    "disable_virtual_path_blobs": false,
+    "local_session_cache": {
+        "disable_cached_session_state": false,
+        "cached_session_timeout": 0,
+        "cached_session_eviction": 0
+    },
+    "http_server_options": {
+        "override_defaults": false,
+        "read_timeout": 0,
+        "write_timeout": 0,
+        "use_ssl": false,
+        "use_ssl_le": false,
+        "ssl_insecure_skip_verify": false,
+        "enable_websockets": false,
+        "certificates": null,
+        "server_name": "",
+        "min_version": 0,
+        "flush_interval": 0,
+        "skip_url_cleaning": false
+    },
+    "service_discovery": {
+        "default_cache_timeout": 0
+    },
+    "close_connections": false,
+    "auth_override": {
+        "force_auth_provider": false,
+        "auth_provider": {
+            "name": "",
+            "storage_engine": "",
+            "meta": null
+        },
+        "force_session_provider": false,
+        "session_provider": {
+            "name": "",
+            "storage_engine": "",
+            "meta": null
+        }
+    },
+    "uptime_tests": {
+        "disable": false,
+        "config": {
+            "failure_trigger_sample_size": 0,
+            "time_wait": 0,
+            "checker_pool_size": 0,
+            "enable_uptime_analytics": false
+        }
+    },
+    "hostname": "",
+    "enable_api_segregation": false,
+    "control_api_hostname": "",
+    "control_api_port": 0,
+    "enable_custom_domains": false,
+    "enable_jsvm": false,
+    "coprocess_options": {
+        "enable_coprocess": false,
+        "coprocess_grpc_server": ""
+    },
+    "hide_generator_header": false,
+    "event_handlers": {
+        "events": null
+    },
+    "event_trigers_defunct": null,
+    "pid_file_location": "",
+    "allow_insecure_configs": false,
+    "public_key_path": "",
+    "close_idle_connections": false,
+    "drl_notification_frequency": 0,
+    "global_session_lifetime": 0,
+    "force_global_session_lifetime": false,
+    "bundle_base_url": "",
+    "enable_bundle_downloader": false,
+    "allow_remote_config": false,
+    "legacy_enable_allowance_countdown": false,
+    "max_idle_connections_per_host": 0,
+    "reload_wait_time": 0,
+    "proxy_ssl_insecure_skip_verify": false
+}
