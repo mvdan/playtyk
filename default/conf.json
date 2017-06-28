@@ -180,7 +180,7 @@
 		"events": null
 	},
 	"event_trigers_defunct": null,
-	"pid_file_location": "",
+	"pid_file_location": "tyk-gateway.pid",
 	"allow_insecure_configs": false,
 	"public_key_path": "",
 	"close_idle_connections": false,
