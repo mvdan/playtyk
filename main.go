@@ -39,6 +39,7 @@ var (
 	listen   = flag.String("l", ":8081", "address to listen on")
 	baseURL  = flag.String("u", "https://play.tyk.io", "public base URL")
 	gwURLStr = flag.String("gw", "http://localhost:8080", "local gateway URL")
+	tykCmd   = flag.String("tyk", "tyk", "tyk gateway binary to use")
 )
 
 func main() {
@@ -111,7 +112,7 @@ func restartCmdWithPair(r *http.Request, conf, def string) error {
 	if err := writeFile(filepath.Join("gateway", "apps", "test.json"), def); err != nil {
 		return err
 	}
-	cmd = exec.CommandContext(ctx, "tyk", "--conf=conf.json")
+	cmd = exec.CommandContext(ctx, *tykCmd, "--conf=conf.json")
 	cmdBuf = new(bytes.Buffer)
 	cmd.Stdout = cmdBuf
 	cmd.Stderr = cmdBuf
