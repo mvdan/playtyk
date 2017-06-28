@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"html/template"
 	"io"
@@ -14,6 +15,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -30,6 +32,11 @@ var (
 	cmdMu     sync.Mutex
 	cmd       *exec.Cmd
 	cmdCancel context.CancelFunc
+
+	baseURL string
+
+	listen   = flag.String("l", ":8081", "address to listen on")
+	gwURLStr = flag.String("gw", "http://localhost:8080", "local gateway URL")
 )
 
 func main() {
@@ -44,14 +51,18 @@ func main() {
 	r.Get("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))).ServeHTTP)
 	r.Post("/restart", restart)
 	r.Get("/", index)
-	gwURL, err := url.Parse("http://localhost:8080")
+	gwURL, err := url.Parse(*gwURLStr)
 	if err != nil {
 		log.Fatal(err)
 	}
 	revProxy := httputil.NewSingleHostReverseProxy(gwURL)
 	r.Get("/gw/*", http.StripPrefix("/gw", revProxy).ServeHTTP)
-	fmt.Println("Serving on http://localhost:8081")
-	http.ListenAndServe(":8081", r)
+	baseURL = *listen
+	if strings.HasPrefix(baseURL, ":") {
+		baseURL = "http://localhost" + baseURL
+	}
+	fmt.Printf("Open %s in your browser\n", baseURL)
+	http.ListenAndServe(*listen, r)
 }
 
 func load() error {
@@ -104,10 +115,6 @@ func writeFile(path, data string) error {
 	return ioutil.WriteFile(path, []byte(data), 0644)
 }
 
-type snippet struct {
-	Conf, Def string
-}
-
 func restart(w http.ResponseWriter, r *http.Request) {
 	conf := []byte(r.FormValue("conf"))
 	def := []byte(r.FormValue("def"))
@@ -124,7 +131,12 @@ func restart(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	io.WriteString(w, "http://localhost:8080/gw"+listenPath)
+	io.WriteString(w, baseURL+"/gw"+listenPath)
+}
+
+type tmplBody struct {
+	BaseURL   string
+	Conf, Def string
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
@@ -132,8 +144,9 @@ func index(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	tmpl.Lookup("index.html").Execute(w, snippet{
-		Conf: defConf,
-		Def:  defDef,
+	tmpl.Lookup("index.html").Execute(w, tmplBody{
+		BaseURL: baseURL,
+		Conf:    defConf,
+		Def:     defDef,
 	})
 }
