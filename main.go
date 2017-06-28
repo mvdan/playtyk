@@ -57,6 +57,7 @@ func main() {
 	r.Post("/share", share)
 	r.Get("/output", output)
 	r.Get("/", index)
+	r.Get("/s/{name}", fetch)
 	gwURL, err := url.Parse(*gwURLStr)
 	if err != nil {
 		log.Fatal(err)
@@ -93,6 +94,15 @@ func load() error {
 }
 
 func restartCmd(r *http.Request) error {
+	conf, def := defConf, defDef
+	if r.Method == "POST" {
+		conf = r.FormValue("conf")
+		def = r.FormValue("def")
+	}
+	return restartCmdWithPair(r, conf, def)
+}
+
+func restartCmdWithPair(r *http.Request, conf, def string) error {
 	cmdMu.Lock()
 	defer cmdMu.Unlock()
 	if cmd != nil {
@@ -100,11 +110,6 @@ func restartCmd(r *http.Request) error {
 	}
 	ctx, fn := context.WithCancel(context.Background())
 	cmdCancel = fn
-	conf, def := defConf, defDef
-	if r.Method == "POST" {
-		conf = r.FormValue("conf")
-		def = r.FormValue("def")
-	}
 	if err := writeFile(filepath.Join("gateway", "conf.json"), conf); err != nil {
 		return err
 	}
@@ -175,14 +180,42 @@ func share(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	state := pageState{Conf: conf, Def: def}
-	enc, err := json.Marshal(state)
+	st := pageState{Conf: conf, Def: def}
+	enc, err := json.Marshal(st)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
 	name := base64SHA1(enc)[:10]
+	if err := writeFile(filepath.Join("shares", name), string(enc)); err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
 	io.WriteString(w, baseURL+"/s/"+name)
+}
+
+func fetch(w http.ResponseWriter, r *http.Request) {
+	name := chi.URLParam(r, "name")
+	f, err := os.Open(filepath.Join("shares", name))
+	if err != nil {
+		if os.IsNotExist(err) {
+			http.Error(w, err.Error(), 404)
+		} else {
+			http.Error(w, err.Error(), 500)
+		}
+		return
+	}
+	var st pageState
+	if err := json.NewDecoder(f).Decode(&st); err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	if err := restartCmdWithPair(r, st.Conf, st.Def); err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	st.BaseURL = baseURL
+	tmpl.Lookup("index.html").Execute(w, st)
 }
 
 func output(w http.ResponseWriter, r *http.Request) {
