@@ -25,6 +25,7 @@ func main() {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(60 * time.Second))
 	r.Use(middleware.StripSlashes)
+	r.Get("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))).ServeHTTP)
 	r.Get("/", handler)
 	http.ListenAndServe(":8080", r)
 }
